@@ -1,6 +1,6 @@
 CC=g++
 CFLAGS=-std=c++11 -g -Wall -pthread -I./
-LDFLAGS= -lpthread -ltbb -lhiredis
+LDFLAGS=-lpthread -ltbb -lhiredis -llogcabin -lprotobuf -lclockbound $(EXTRA_LDFLAGS)
 SUBDIRS=core db redis
 SUBSRCS=$(wildcard core/*.cc) $(wildcard db/*.cc)
 OBJECTS=$(SUBSRCS:.cc=.o)
@@ -21,4 +21,3 @@ clean:
 	$(RM) $(EXEC)
 
 .PHONY: $(SUBDIRS) $(EXEC)
-
