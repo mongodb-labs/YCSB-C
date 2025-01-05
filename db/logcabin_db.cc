@@ -84,7 +84,9 @@ int LogCabinDB::Read(const string &table, const string &key, const vector<string
   }
 
   auto tree = cluster->getTree();
+#ifdef LOGCABIN_DB_TIMEOUT
   tree.setTimeout(TIMEOUT_NANOS);
+#endif
   auto path = table + "/" + key;
   string contents;
   auto readResult = tree.read(path, contents);
@@ -106,7 +108,9 @@ int LogCabinDB::Update(const string &table, const string &key, vector<KVPair> &v
   cout << "UPDATE table: " << table << ", key " << key << ", values " << valuesStr << endl;
 #endif
   auto tree = cluster->getTree();
+#ifdef LOGCABIN_DB_TIMEOUT
   tree.setTimeout(TIMEOUT_NANOS);
+#endif
   auto path = table + "/" + key;
   string contents;
   auto readResult = tree.read(path, contents);
@@ -148,7 +152,9 @@ int LogCabinDB::Insert(const std::string &table, const std::string &key,
   cout << "INSERT table: " << table << ", key " << key << ", values " << valuesStr << endl;
 #endif
   auto tree = cluster->getTree();
+#ifdef LOGCABIN_DB_TIMEOUT
   tree.setTimeout(TIMEOUT_NANOS);
+#endif
   auto path = table + "/" + key;
   auto result = tree.makeDirectory(table);
   if (result.status != Status::OK)
