@@ -14,7 +14,7 @@ namespace ycsbc
 class LogCabinDB : public DB
 {
 public:
-  LogCabinDB();
+  LogCabinDB(const std::string& host);
 
   int Read(const std::string &table, const std::string &key, const std::vector<std::string> *fields,
            std::vector<KVPair> &result);

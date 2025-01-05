@@ -69,8 +69,8 @@ template <typename T> string toString(const T &t)
 
 namespace ycsbc
 {
-LogCabinDB::LogCabinDB()
-    : cluster(new LogCabin::Client::Cluster("127.0.0.1:5254,127.0.0.1:5255,127.0.0.1:5256"))
+LogCabinDB::LogCabinDB(const std::string& host)
+    : cluster(new LogCabin::Client::Cluster(host))
 {
 }
 
