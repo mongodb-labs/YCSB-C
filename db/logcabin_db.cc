@@ -93,14 +93,18 @@ int LogCabinDB::Read(const string &table, const string &key, const vector<string
     exit(1);
   }
   parseStringToVector(contents, result);
+#ifdef LOGCABIN_DB_VERBOSE
   cout << "READ table: " << table << ", key " << key << ", fields NULL, " << result << endl;
+#endif
   return DB::kOK;
 }
 
 int LogCabinDB::Update(const string &table, const string &key, vector<KVPair> &values)
 {
   auto valuesStr = toString(values);
+#ifdef LOGCABIN_DB_VERBOSE
   cout << "UPDATE table: " << table << ", key " << key << ", values " << valuesStr << endl;
+#endif
   auto tree = cluster->getTree();
   tree.setTimeout(TIMEOUT_NANOS);
   auto path = table + "/" + key;
@@ -140,7 +144,9 @@ int LogCabinDB::Insert(const std::string &table, const std::string &key,
                        std::vector<KVPair> &values)
 {
   auto valuesStr = toString(values);
+#ifdef LOGCABIN_DB_VERBOSE
   cout << "INSERT table: " << table << ", key " << key << ", values " << valuesStr << endl;
+#endif
   auto tree = cluster->getTree();
   tree.setTimeout(TIMEOUT_NANOS);
   auto path = table + "/" + key;
