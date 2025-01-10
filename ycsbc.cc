@@ -63,9 +63,12 @@ int main(const int argc, const char *argv[]) {
   vector<future<int>> actual_ops;
   atomic<int> progress{0};
   int total_ops = stoi(props[ycsbc::CoreWorkload::RECORD_COUNT_PROPERTY]);
+  int base_ops_per_thread = total_ops / num_threads;
+  int remaining_ops = total_ops % num_threads;
   for (int i = 0; i < num_threads; ++i) {
+    int ops_for_this_thread = base_ops_per_thread + (i < remaining_ops ? 1 : 0);
     actual_ops.emplace_back(async(launch::async,
-        DelegateClient, db, &wl, total_ops / num_threads, true, &progress));
+        DelegateClient, db, &wl, ops_for_this_thread, true, &progress));
   }
   
   while (actual_ops[0].wait_for(chrono::seconds(0)) != future_status::ready) {
