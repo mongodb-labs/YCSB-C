@@ -25,7 +25,10 @@ public:
     throw "Scan: function not implemented!";
   }
 
-  int Update(const std::string &table, const std::string &key, std::vector<KVPair> &values);
+  int Update(const std::string &table, const std::string &key, std::vector<KVPair> &values)
+  {
+    throw "Update: function not implemented!";
+  }
 
   int Insert(const std::string &table, const std::string &key, std::vector<KVPair> &values);
 

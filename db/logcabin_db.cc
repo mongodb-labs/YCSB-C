@@ -1,7 +1,7 @@
 #include "logcabin_db.h"
 
 #include <iostream>
-#include <regex>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -12,7 +12,6 @@ using namespace std;
 namespace
 {
 const uint64_t TIMEOUT_NANOS = 10ULL * 1000ULL * 1000ULL * 1000ULL;
-
 typedef LogCabin::Client::Status Status;
 typedef ycsbc::DB::KVPair KVPair;
 
@@ -29,34 +28,6 @@ ostream &operator<<(ostream &os, const vector<KVPair> &vec)
   }
   os << "}";
   return os;
-}
-
-void parseStringToVector(const string &input, vector<KVPair> &result)
-{
-  // Ensure the input starts and ends with curly braces
-  if (input.front() != '{' || input.back() != '}')
-  {
-    throw invalid_argument(
-      "Input string must be enclosed in curly braces: " + input);
-  }
-
-  // Extract the content inside the curly braces
-  string content = input.substr(1, input.size() - 2);
-
-  // Regular expression to match key-value pairs
-  // TODO: no regex
-  regex kv_regex(R"(\s*'([^']+)'\s*:\s*'([^']+)'\s*)");
-  auto kv_begin = sregex_iterator(content.begin(), content.end(), kv_regex);
-  auto kv_end = sregex_iterator();
-
-  // Iterate over all matches
-  for (auto it = kv_begin; it != kv_end; ++it)
-  {
-    smatch match = *it;
-    string key = match[1].str();
-    string value = match[2].str();
-    result.emplace_back(key, value);
-  }
 }
 
 template <typename T> string toString(const T &t)
@@ -94,53 +65,10 @@ int LogCabinDB::Read(const string &table, const string &key, const vector<string
     cerr << "read: " << readResult.error << endl;
     exit(1);
   }
-  parseStringToVector(contents, result);
 #ifdef LOGCABIN_DB_VERBOSE
-  cout << "READ table: " << table << ", key " << key << ", fields NULL, " << result << endl;
+  cout << "READ table: " << table << ", key " << key << ", fields NULL, " << contents << endl;
 #endif
-  return DB::kOK;
-}
-
-int LogCabinDB::Update(const string &table, const string &key, vector<KVPair> &values)
-{
-  auto valuesStr = toString(values);
-#ifdef LOGCABIN_DB_VERBOSE
-  cout << "UPDATE table: " << table << ", key " << key << ", values " << valuesStr << endl;
-#endif
-  auto tree = cluster->getTree();
-#ifdef LOGCABIN_DB_TIMEOUT
-  tree.setTimeout(TIMEOUT_NANOS);
-#endif
-  auto path = table + "/" + key;
-  string contents;
-  auto readResult = tree.read(path, contents);
-  if (readResult.status != Status::OK) {
-    cerr << "read: " << readResult.error << endl;
-    exit(1);
-  }
-  vector<KVPair> dbRecord;
-  parseStringToVector(contents, dbRecord);
-  for (auto &dbPair : dbRecord)
-  {
-    for (auto &valPair : values)
-    {
-      if (dbPair.first == valPair.first)
-      {
-        dbPair.second = valPair.second;
-        break;
-      }
-    }
-  }
-
-  auto dbRecordStr = toString(dbRecord);
-  // NOTE: no concurrency control, there will be lost-update anomalies.
-  auto result = tree.write(path, dbRecordStr);
-  if (result.status != Status::OK)
-  {
-    cerr << "write: " << result.error << endl;
-    exit(1);
-  }
-
+  // For benchmarking, don't actually parse 'contents' into 'result'.
   return DB::kOK;
 }
 
