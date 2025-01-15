@@ -80,7 +80,7 @@ echo 'RECONFIGURE =============================='
 ~/logcabin/build/Examples/Reconfigure --cluster=$SERVER1 set $SERVER1 $SERVER2 $SERVER3
 ~/logcabin/build/Examples/HelloWorld --cluster=$SERVER1,$SERVER2,$SERVER3
 
-LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH ./ycsbc -db logcabin -threads 256 -P ./workloads/workloadd.spec -host $SERVER1,$SERVER2,$SERVER3 | tee "$(date +%s).log"
+LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH ./ycsbc -db logcabin -threads 100 -P ./workloads/workloadd.spec -host $SERVER1,$SERVER2,$SERVER3 | tee "$(date +%s).log"
 
 sleep 5
 
