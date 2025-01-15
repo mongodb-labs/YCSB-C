@@ -12,6 +12,7 @@ listenAddresses = $SERVER1
 clusterUUID = foo
 storagePath = storage1
 logPolicy = NOTICE
+snapshotMinLogSize = 99999999999
 EOF
 
 cat <<EOF > ~/logcabin/conf2.conf
@@ -20,6 +21,7 @@ listenAddresses = $SERVER2
 clusterUUID = foo
 storagePath = storage2
 logPolicy = NOTICE
+snapshotMinLogSize = 99999999999
 EOF
 
 cat <<EOF > ~/logcabin/conf3.conf
@@ -28,6 +30,7 @@ listenAddresses = $SERVER3
 clusterUUID = foo
 storagePath = storage3
 logPolicy = NOTICE
+snapshotMinLogSize = 99999999999
 EOF
 
 sleep 5
