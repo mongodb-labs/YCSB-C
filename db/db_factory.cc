@@ -26,7 +26,9 @@ DB* DBFactory::CreateDB(utils::Properties &props) {
   } else if (props["dbname"] == "lock_stl") {
     return new LockStlDB;
   } else if (props["dbname"] == "logcabin") {
-    return new LogCabinDB(props["host"]);
+    return new LogCabinDB(props["host"],
+                          // stoi(props.GetProperty("threadcount", "1"))
+                          16);
   } else if (props["dbname"] == "redis") {
     int port = stoi(props["port"]);
     int slaves = stoi(props["slaves"]);

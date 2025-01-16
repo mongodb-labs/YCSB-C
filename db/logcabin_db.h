@@ -11,10 +11,12 @@
 
 namespace ycsbc
 {
+class ClusterPool;
+
 class LogCabinDB : public DB
 {
 public:
-  LogCabinDB(const std::string& host);
+  LogCabinDB(const std::string& host, int poolSize);
 
   int Read(const std::string &table, const std::string &key, const std::vector<std::string> *fields,
            std::vector<KVPair> &result);
@@ -35,7 +37,7 @@ public:
   int Delete(const std::string &table, const std::string &key);
 
 private:
-  std::unique_ptr<LogCabin::Client::Cluster> cluster;
+  std::unique_ptr<ClusterPool> clusterPool;
 };
 
 } // ycsbc

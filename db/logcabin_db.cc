@@ -1,6 +1,9 @@
 #include "logcabin_db.h"
 
+#include <condition_variable>
 #include <iostream>
+#include <mutex>
+#include <queue>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -40,10 +43,50 @@ template <typename T> string toString(const T &t)
 
 namespace ycsbc
 {
-LogCabinDB::LogCabinDB(const std::string& host)
-    : cluster(new LogCabin::Client::Cluster(host))
-{
-}
+class ClusterPool {
+public:
+  ClusterPool(const std::string &host, int poolSize)
+      : host(host),
+        poolSize(poolSize) {
+    for (int i = 0; i < poolSize; ++i) {
+      pool.push(new LogCabin::Client::Cluster(host));
+    }
+  }
+
+  ~ClusterPool() {
+    while (!pool.empty()) {
+      delete pool.front();
+      pool.pop();
+    }
+  }
+
+  LogCabin::Client::Cluster *checkout() {
+    std::unique_lock<std::mutex> lock(mutex);
+    while (pool.empty()) {
+      condVar.wait(lock);
+    }
+    LogCabin::Client::Cluster *cluster = pool.front();
+    pool.pop();
+    return cluster;
+  }
+
+  void checkin(LogCabin::Client::Cluster *cluster) {
+    std::unique_lock<std::mutex> lock(mutex);
+    pool.push(cluster);
+    condVar.notify_one();
+  }
+
+private:
+  std::string host;
+  size_t poolSize;
+  std::queue<LogCabin::Client::Cluster *> pool;
+  std::mutex mutex;
+  std::condition_variable condVar;
+};
+
+LogCabinDB::LogCabinDB(const std::string &host, int poolSize)
+    : clusterPool(new ClusterPool(host, poolSize)) // Initialize pool with 10 clusters
+{}
 
 int LogCabinDB::Read(const string &table, const string &key, const vector<string> *fields,
                      vector<KVPair> &result)
@@ -54,6 +97,7 @@ int LogCabinDB::Read(const string &table, const string &key, const vector<string
     throw invalid_argument("Can't yet handle workloads with readallfields=false");
   }
 
+  auto cluster = clusterPool->checkout();
   auto tree = cluster->getTree();
 #ifdef LOGCABIN_DB_TIMEOUT
   tree.setTimeout(TIMEOUT_NANOS);
@@ -68,7 +112,7 @@ int LogCabinDB::Read(const string &table, const string &key, const vector<string
 #ifdef LOGCABIN_DB_VERBOSE
   cout << "READ table: " << table << ", key " << key << ", fields NULL, " << contents << endl;
 #endif
-  // For benchmarking, don't actually parse 'contents' into 'result'.
+  clusterPool->checkin(cluster);
   return DB::kOK;
 }
 
@@ -79,6 +123,7 @@ int LogCabinDB::Insert(const std::string &table, const std::string &key,
 #ifdef LOGCABIN_DB_VERBOSE
   cout << "INSERT table: " << table << ", key " << key << ", values " << valuesStr << endl;
 #endif
+  auto cluster = clusterPool->checkout();
   auto tree = cluster->getTree();
 #ifdef LOGCABIN_DB_TIMEOUT
   tree.setTimeout(TIMEOUT_NANOS);
@@ -98,6 +143,7 @@ int LogCabinDB::Insert(const std::string &table, const std::string &key,
     exit(1);
   }
 
+  clusterPool->checkin(cluster);
   return DB::kOK;
 }
 
