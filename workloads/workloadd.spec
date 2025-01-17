@@ -24,5 +24,3 @@ insertproportion=0.05
 
 requestdistribution=latest
 
-fieldcount=1
-fieldlength=1024
