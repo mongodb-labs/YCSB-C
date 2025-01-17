@@ -2,9 +2,9 @@
 
 set -ex
 
-SERVER1=ec2-18-225-235-210.us-east-2.compute.amazonaws.com
-SERVER2=ec2-18-221-42-8.us-east-2.compute.amazonaws.com
-SERVER3=ec2-3-17-187-101.us-east-2.compute.amazonaws.com
+SERVER1=ec2-18-188-120-82.us-east-2.compute.amazonaws.com
+SERVER2=ec2-18-226-251-77.us-east-2.compute.amazonaws.com
+SERVER3=ec2-18-118-255-189.us-east-2.compute.amazonaws.com
 
 cat <<EOF > ~/logcabin/conf1.conf
 serverId = 1
