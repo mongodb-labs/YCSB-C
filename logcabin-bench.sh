@@ -13,6 +13,7 @@ clusterUUID = foo
 storagePath = storage1
 logPolicy = NOTICE
 snapshotMinLogSize = 99999999999
+quorumCheckOnRead = false
 EOF
 
 cat <<EOF > ~/logcabin/conf2.conf
@@ -22,6 +23,7 @@ clusterUUID = foo
 storagePath = storage2
 logPolicy = NOTICE
 snapshotMinLogSize = 99999999999
+quorumCheckOnRead = false
 EOF
 
 cat <<EOF > ~/logcabin/conf3.conf
@@ -31,13 +33,14 @@ clusterUUID = foo
 storagePath = storage3
 logPolicy = NOTICE
 snapshotMinLogSize = 99999999999
+quorumCheckOnRead = false
 EOF
 
 sleep 5
 
 echo 'SERVER 1 ================================'
 
-ssh -v -o StrictHostKeyChecking=no -i ~/.ssh/jesse-2024.pem $SERVER1 <<EOF
+ssh -o StrictHostKeyChecking=no -i ~/.ssh/jesse-2024.pem $SERVER1 <<EOF
 set +x
 cd logcabin
 killall -9 perf LogCabin Reconfigure || true
